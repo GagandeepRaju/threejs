@@ -3,13 +3,33 @@ import * as THREE from "three";
 import gsap from "gsap";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 const canvas = document.querySelector(".webgl");
+// light
+// const light = new THREE.AmbientLight(0x404040); // soft white light
+// scene.add(light);
 
 // creating scene
 const scene = new THREE.Scene();
 
+// create 50 triangles
+const count = 500;
+
+// buffer geomatery
+const positionsArray = new Float32Array(count * 3 * 3);
+for (let i = 0; i < count * 3 * 3; i++) {
+  positionsArray[i] = (Math.random() - 0.5) * 2;
+}
+
+const positionsAttributes = new THREE.BufferAttribute(positionsArray, 3);
+positionsAttributes.name = "positionsAttributes";
+// console.log(positionsAttributes);
+
 // Red cube
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+const geometry = new THREE.BufferGeometry();
+geometry.setAttribute("position", positionsAttributes);
+const material = new THREE.MeshBasicMaterial({
+  color: 0x002244,
+  wireframe: true,
+});
 const mesh = new THREE.Mesh(geometry, material);
 scene.add(mesh);
 
@@ -34,9 +54,21 @@ scene.add(mesh);
 
 // sizes
 const sizes = {
-  width: 800,
-  height: 600,
+  width: window.innerWidth,
+  height: window.innerHeight,
 };
+
+// screen resizes
+window.addEventListener("resize", () => {
+  //resizing screen
+  // console.log("resize");
+  sizes.width = window.innerWidth;
+  sizes.height = window.innerHeight;
+  camera.aspect = sizes.width / sizes.height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(sizes.width, sizes.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
@@ -49,6 +81,26 @@ camera.lookAt(mesh.position);
 scene.add(camera);
 
 camera.position.z = 3;
+
+//Double click screen
+window.addEventListener("dblclick", () => {
+  const fullscreenElement =
+    document.fullscreenElement || document.webkitFullscreenElement;
+
+  if (!fullscreenElement) {
+    if (canvas.requestFullscreen) {
+      canvas.requestFullscreen();
+    } else if (canvas.webkitRequestFullscreen) {
+      canvas.webkitRequestFullscreen();
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  }
+});
 
 // Controls
 const controls = new OrbitControls(camera, canvas);
