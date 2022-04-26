@@ -2,7 +2,10 @@ import "./style.css";
 import * as THREE from "three";
 import gsap from "gsap";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import * as dat from "dat.gui";
 const canvas = document.querySelector(".webgl");
+
+const gui = new dat.GUI();
 // light
 // const light = new THREE.AmbientLight(0x404040); // soft white light
 // scene.add(light);
@@ -13,21 +16,28 @@ const scene = new THREE.Scene();
 // create 50 triangles
 const count = 500;
 
-// buffer geomatery
+// buffer geomatry
 const positionsArray = new Float32Array(count * 3 * 3);
 for (let i = 0; i < count * 3 * 3; i++) {
   positionsArray[i] = (Math.random() - 0.5) * 2;
 }
 
 const positionsAttributes = new THREE.BufferAttribute(positionsArray, 3);
-positionsAttributes.name = "positionsAttributes";
+
 // console.log(positionsAttributes);
 
+// color
+const parameters = {
+  color: 0x002244,
+  spin: () => {
+    gsap.to(mesh.rotation, { duration: 1, y: mesh.rotation.y + Math.PI * 2 });
+  },
+};
 // Red cube
 const geometry = new THREE.BufferGeometry();
 geometry.setAttribute("position", positionsAttributes);
 const material = new THREE.MeshBasicMaterial({
-  color: 0x002244,
+  color: parameters.color,
   wireframe: true,
 });
 const mesh = new THREE.Mesh(geometry, material);
@@ -123,6 +133,15 @@ addEventListener("mousemove", (event) => {
   // console.log(cursor.y);
 });
 
+//GUI debug
+gui.add(mesh.position, "y", -1, 1, 0.05);
+gui.add(mesh.position, "x", -1, 1, 0.05);
+gui.add(mesh.position, "z", -1, 1, 0.05);
+gui.add(parameters, "spin");
+gui.addColor(parameters, "color").onChange(() => {
+  //
+  material.color.set(parameters.color);
+});
 // Clock
 const clock = new THREE.Clock();
 
