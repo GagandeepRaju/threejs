@@ -3,7 +3,50 @@ import * as THREE from "three";
 import gsap from "gsap";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import * as dat from "dat.gui";
+// import imageSource from "../static/door.jpg";
 const canvas = document.querySelector(".webgl");
+
+const loadingManager = new THREE.LoadingManager();
+
+// loadingManager.onStart = () => {
+//   console.log("start");
+// };
+
+// loadingManager.onLoad = () => {
+//   console.log("loaded");
+// };
+// loadingManager.onProgress = () => {
+//   console.log("progressing...");
+// };
+// loadingManager.onError = () => {
+//   console.log("Error");
+// };
+
+const textureLoader = new THREE.TextureLoader(loadingManager);
+const colorTexture = textureLoader.load("/textures/door/color.jpg");
+const alphaTexture = textureLoader.load("/textures/door/alpha.jpg");
+const heightTexture = textureLoader.load("/textures/door/height.jpg");
+const metalnessTexture = textureLoader.load("/textures/door/metalness.jpg");
+const normalTexture = textureLoader.load("/textures/door/normal.jpg");
+const roughnessTexture = textureLoader.load("/textures/door/roughness.jpg");
+const ambientOcclusionTexture = textureLoader.load(
+  "/textures/door/ambientOcclusion.jpg"
+);
+
+// colorTexture.repeat.x = 2;
+// colorTexture.repeat.y = 2;
+// colorTexture.wrapS = THREE.RepeatWrapping;
+// colorTexture.wrapT = THREE.Re peatWrapping;
+// const image = new Image();
+// const texture = new THREE.Texture(image);
+// // material
+// image.onload = () => {
+//   //
+//   texture.needsUpdate = true;
+// };
+
+// image.src = "door.jpg";
+// console.log(imageSource);
 
 const gui = new dat.GUI();
 // light
@@ -34,11 +77,10 @@ const parameters = {
   },
 };
 // Red cube
-const geometry = new THREE.BufferGeometry();
-geometry.setAttribute("position", positionsAttributes);
+const geometry = new THREE.BoxGeometry();
+// geometry.setAttribute("position", positionsAttributes);
 const material = new THREE.MeshBasicMaterial({
-  color: parameters.color,
-  wireframe: true,
+  map: colorTexture,
 });
 const mesh = new THREE.Mesh(geometry, material);
 scene.add(mesh);
