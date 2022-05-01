@@ -11,7 +11,6 @@ const loadingManager = new THREE.LoadingManager();
 // loadingManager.onStart = () => {
 //   console.log("start");
 // };
-
 // loadingManager.onLoad = () => {
 //   console.log("loaded");
 // };
@@ -32,6 +31,8 @@ const roughnessTexture = textureLoader.load("/textures/door/roughness.jpg");
 const ambientOcclusionTexture = textureLoader.load(
   "/textures/door/ambientOcclusion.jpg"
 );
+const matcapTexture = textureLoader.load("/textures/matcaps/1.png");
+const gradientTexture = textureLoader.load("/textures/gradients/3.jpg");
 
 // colorTexture.repeat.x = 2;
 // colorTexture.repeat.y = 2;
@@ -73,17 +74,84 @@ const positionsAttributes = new THREE.BufferAttribute(positionsArray, 3);
 const parameters = {
   color: 0x002244,
   spin: () => {
-    gsap.to(mesh.rotation, { duration: 1, y: mesh.rotation.y + Math.PI * 2 });
+    gsap.to(torus.rotation, { duration: 1, y: torus.rotation.y + Math.PI * 2 });
+    gsap.to(sphere.rotation, {
+      duration: 1,
+      y: sphere.rotation.y + Math.PI * 2,
+    });
+    gsap.to(plane.rotation, { duration: 1, y: plane.rotation.y + Math.PI * 2 });
   },
 };
+
+// lights
+
+const ambienbtLight = new THREE.AmbientLight(0xffffff, 0.5);
+
+scene.add(ambienbtLight);
+
+const pointLight = new THREE.PointLight(0xffffff, 0.5);
+scene.add(pointLight);
+
+// creating meshe material
+
+// const material = new THREE.MeshBasicMaterial();
+
+// material.map = colorTexture;
+// material.color = new THREE.Color(0x00ff00);
+// material.wireframe = true;
+// material.opacity = 0.1;
+// material.transparent = true;
+// material.alphaMap = alphaTexture;
+// material.side = THREE.DoubleSide;
+
+// normal material
+
+// const material = new THREE.MeshNormalMaterial();
+
+// meshcap material
+const material = new THREE.MeshStandardMaterial();
+// material.matcap = matcapTexture;
+// material.shininess = 100;
+material.metalness = 0;
+material.roughness = 1;
+material.map = colorTexture;
+material.aoMap = ambientOcclusionTexture;
+material.aoMapIntensity = 1;
+material.displacementMap = heightTexture;
+material.displacementScale = 0.05;
+material.metalnessMap = metalnessTexture;
+material.roughnessMap = roughnessTexture;
+material.normalMap = normalTexture;
+material.normalScale.set(0.5, 0.5);
+material.transparent = true;
+material.alphaMap = alphaTexture;
+// material.gradientMap = gradientTexture;
+gui.add(material, "metalness").min(0).max(1).step(0.001);
+gui.add(material, "roughness").min(0).max(1).step(0.001);
+gui.add(material, "aoMapIntensity").min(0).max(10).step(0.001);
+gui.add(material, "displacementScale").min(0).max(1).step(0.001);
+
+const torus = new THREE.Mesh(
+  new THREE.TorusGeometry(0.5, 0.2, 16, 16),
+  material
+);
+const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 16), material);
+const plane = new THREE.Mesh(new THREE.PlaneGeometry(1, 2), material);
+// plane.sides = THREE.DoubleSide;
+scene.add(plane);
+scene.add(torus);
+scene.add(sphere);
+
+torus.position.x = 1.5;
+sphere.position.x = -1.5;
 // Red cube
-const geometry = new THREE.BoxGeometry();
+// const geometry = new THREE.BoxGeometry();
 // geometry.setAttribute("position", positionsAttributes);
-const material = new THREE.MeshBasicMaterial({
-  map: colorTexture,
-});
-const mesh = new THREE.Mesh(geometry, material);
-scene.add(mesh);
+// const material = new THREE.MeshBasicMaterial({
+//   map: colorTexture,
+// });
+// const mesh = new THREE.Mesh(geometry, material);
+// scene.add(mesh);
 
 // mesh.position.x = 1;
 // mesh.position.y = 1;
@@ -129,7 +197,7 @@ const camera = new THREE.PerspectiveCamera(
   1,
   100
 );
-camera.lookAt(mesh.position);
+// camera.lookAt(mesh.position);
 scene.add(camera);
 
 camera.position.z = 3;
@@ -176,9 +244,9 @@ addEventListener("mousemove", (event) => {
 });
 
 //GUI debug
-gui.add(mesh.position, "y", -1, 1, 0.05);
-gui.add(mesh.position, "x", -1, 1, 0.05);
-gui.add(mesh.position, "z", -1, 1, 0.05);
+// gui.add(mesh.position, "y", -1, 1, 0.05);
+// gui.add(mesh.position, "x", -1, 1, 0.05);
+// gui.add(mesh.position, "z", -1, 1, 0.05);
 gui.add(parameters, "spin");
 gui.addColor(parameters, "color").onChange(() => {
   //
@@ -208,6 +276,14 @@ const tick = () => {
   // camera.position.z = Math.cos(cursor.x * Math.PI * 2) * 3;
   // camera.position.y = cursor.y;
   // camera.lookAt(mesh.position);
+
+  sphere.rotation.x = 0.1 * elapsedTime;
+  plane.rotation.x = 0.1 * elapsedTime;
+  torus.rotation.x = 0.1 * elapsedTime;
+  sphere.rotation.y = 0.2 * elapsedTime;
+  plane.rotation.y = 0.2 * elapsedTime;
+  torus.rotation.y = 0.2 * elapsedTime;
+
   controls.update();
   renderer.render(scene, camera);
   window.requestAnimationFrame(tick);
